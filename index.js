@@ -24,6 +24,21 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("receive-message", msg);
   });
 
+  socket.on("broadcastOffer", (offer) => {
+    socket.broadcast.emit("offer", { offer, from: socket.id });
+  });
+
+  socket.on("answer", (data) => {
+    io.to(data.to).emit("answer", data.answer);
+  });
+
+  // Listen for ICE candidates and forward them
+  socket.on("candidate", (data) => {
+    io.to(data.to).emit("candidate", data.candidate);
+  });
+
+
+
   // Video Call Signaling Events
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
