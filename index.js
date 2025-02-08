@@ -15,39 +15,34 @@ const io = new Server(httpServer, {
   },
 });
 
+// WebSocket connection
 io.on("connection", (socket) => {
-  console.log(`✅ User connected: ${socket.id}`);
+  console.log("A user connected:", socket.id);
 
-  // Notify all users that a new user joined
-  io.emit("user-connected", socket.id);
-
-  // Listen for broadcastOffer from the caller
-  socket.on("broadcastOffer", (offer) => {
-    socket.broadcast.emit("offer", { offer, from: socket.id });
+  socket.on("send-message", (msg) => {
+    console.log("Message received from", socket.id, ":", msg);
+    socket.broadcast.emit("receive-message", msg);
   });
 
-  // Listen for answer from the callee and send to the caller
-  socket.on("answer", (data) => {
-    io.to(data.to).emit("answer", data.answer);
+  // Video Call Signaling Events
+  socket.on("join-room", (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
+    socket.broadcast.to(roomId).emit("user-joined", socket.id);
   });
 
-  // Listen for ICE candidates and forward them
-  socket.on("candidate", (data) => {
-    io.to(data.to).emit("candidate", data.candidate);
+  socket.on("signal", (data) => {
+    io.to(data.userToSignal).emit("signal", {
+      signal: data.signal,
+      from: data.from,
+    });
   });
 
-  // 🔥 Listen for chat messages and broadcast to all users
-  socket.on("chatMessage", (message) => {
-    io.emit("chatMessage", { text: message, sender: socket.id });
-  });
-
-  // Disconnect User
   socket.on("disconnect", () => {
-    console.log(`❌ User disconnected: ${socket.id}`);
-    io.emit("user-disconnected", socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
 
 httpServer.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
