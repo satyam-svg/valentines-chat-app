@@ -6,7 +6,6 @@ import cors from "cors";
 const app = express();
 const port = 3001;
 
-// Enable CORS
 app.use(cors());
 
 const httpServer = http.createServer(app);
@@ -22,16 +21,27 @@ io.on("connection", (socket) => {
 
   socket.on("send-message", (msg) => {
     console.log("Message received from", socket.id, ":", msg);
-
-    // Send message to all OTHER users (not the sender)
     socket.broadcast.emit("receive-message", msg);
+  });
+
+  // Video Call Signaling Events
+  socket.on("join-room", (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
+    socket.broadcast.to(roomId).emit("user-joined", socket.id);
+  });
+
+  socket.on("signal", (data) => {
+    io.to(data.userToSignal).emit("signal", {
+      signal: data.signal,
+      from: data.from,
+    });
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
 });
-
 
 httpServer.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
