@@ -28,8 +28,8 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("offer", { offer, from: socket.id });
   });
 
-  socket.on("answer", (data) => {
-    io.to(data.to).emit("answer", data.answer);
+  socket.on("answer", ({ answer, to }) => {
+    socket.to(to).emit("answer", answer); // Forward answer to the caller
   });
 
   // Listen for ICE candidates and forward them
