@@ -17,7 +17,7 @@ const io = new Server(httpServer, {
 
 // WebSocket connection
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+  console.log("A user connected to device:", socket.id);
 
   socket.on("send-message", (msg) => {
     console.log("Message received from", socket.id, ":", msg);
