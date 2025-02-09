@@ -35,8 +35,8 @@ io.on("connection", (socket) => {
 
   
   // Listen for ICE candidates and forward them
-  socket.on("candidate", (data) => {
-    io.to(data.to).emit("candidate", data.candidate);
+  socket.on("candidate", ({ candidate, to }) => {  // Add destructuring
+    socket.to(to).emit("candidate", candidate);  // Forward to specific user
   });
 
 
