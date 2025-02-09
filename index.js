@@ -25,9 +25,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("broadcastOffer", (offer) => {
-    socket.broadcast.emit("offer", { offer, from: socket.id });
+    // Broadcast to all except sender using rooms
+    socket.to("valentines-room").emit("offer", { offer, from: socket.id });
   });
 
+  
   socket.on("answer", ({ answer, to }) => {
     socket.to(to).emit("answer", answer); // Forward answer to the caller
   });
